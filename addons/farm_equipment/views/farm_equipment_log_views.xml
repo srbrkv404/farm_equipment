@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+    <record id="view_farm_equipment_log_list" model="ir.ui.view">
+        <field name="name">farm.equipment.log.list</field>
+        <field name="model">farm.equipment.log</field>
+        <field name="arch" type="xml">
+            <list string="Журнал работы техники" decoration-success="state == 'done'"
+                  decoration-info="state == 'in_progress'">
+                <field name="date_start"/>
+                <field name="date_end"/>
+                <field name="equipment_id"/>
+                <field name="driver_id"/>
+                <field name="engine_hours_used" sum="Итого моточасов"/>
+                <field name="mileage_used" sum="Итого км"/>
+                <field name="area_processed" sum="Итого га"/>
+                <field name="productivity"/>
+                <field name="fuel_per_ha"/>
+                <field name="state" widget="badge"
+                       decoration-success="state == 'done'"
+                       decoration-info="state == 'in_progress'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_farm_equipment_log_form" model="ir.ui.view">
+        <field name="name">farm.equipment.log.form</field>
+        <field name="model">farm.equipment.log</field>
+        <field name="arch" type="xml">
+            <form string="Смена работы техники">
+                <header>
+                    <button name="action_finish" type="object" string="Завершить смену"
+                            class="btn-primary" invisible="state == 'done'"/>
+                    <field name="state" widget="statusbar" statusbar_visible="in_progress,done"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group string="Основное">
+                            <field name="equipment_id"/>
+                            <field name="driver_id"/>
+                            <field name="date_start"/>
+                            <field name="date_end" readonly="1"/>
+                        </group>
+                        <group string="Показатели">
+                            <field name="area_processed"/>
+                            <field name="fuel_used"/>
+                            <field name="productivity" readonly="1"/>
+                            <field name="fuel_per_ha" readonly="1"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group string="Моточасы">
+                            <field name="engine_hours_start"/>
+                            <field name="engine_hours_end"/>
+                            <field name="engine_hours_used" readonly="1"/>
+                        </group>
+                        <group string="Пробег">
+                            <field name="mileage_start"/>
+                            <field name="mileage_end"/>
+                            <field name="mileage_used" readonly="1"/>
+                        </group>
+                    </group>
+                    <field name="notes" placeholder="Примечания к смене..."/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_farm_equipment_log" model="ir.actions.act_window">
+        <field name="name">Журнал работы</field>
+        <field name="res_model">farm.equipment.log</field>
+        <field name="view_mode">list,form</field>
+        <field name="help">Здесь фиксируются все смены/выезды техники в поле.</field>
+    </record>
+    </data>
+</odoo>

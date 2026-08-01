@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+    <record id="view_farm_equipment_list" model="ir.ui.view">
+        <field name="name">farm.equipment.list</field>
+        <field name="model">farm.equipment</field>
+        <field name="arch" type="xml">
+            <list string="Техника" decoration-success="state == 'free'"
+                  decoration-info="state == 'working'"
+                  decoration-muted="state == 'maintenance'">
+                <field name="name"/>
+                <field name="brand"/>
+                <field name="equipment_type"/>
+                <field name="driver_id"/>
+                <field name="working_width"/>
+                <field name="fuel_consumption"/>
+                <field name="fuel_consumption_uom"/>
+                <field name="engine_hours" sum="Всего моточасов"/>
+                <field name="mileage" sum="Всего км"/>
+                <field name="avg_productivity"/>
+                <field name="state" widget="badge"
+                       decoration-success="state == 'free'"
+                       decoration-info="state == 'working'"
+                       decoration-muted="state == 'maintenance'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_farm_equipment_kanban" model="ir.ui.view">
+        <field name="name">farm.equipment.kanban</field>
+        <field name="model">farm.equipment</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="state" class="o_kanban_small_column">
+                <field name="name"/>
+                <field name="brand"/>
+                <field name="driver_id"/>
+                <field name="state"/>
+                <templates>
+                    <t t-name="card">
+                        <div class="oe_kanban_card oe_kanban_global_click p-2">
+                            <strong><field name="name"/></strong>
+                            <div t-if="record.brand.value"><field name="brand"/></div>
+                            <div>
+                                Механизатор: <field name="driver_id"/>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="view_farm_equipment_form" model="ir.ui.view">
+        <field name="name">farm.equipment.form</field>
+        <field name="model">farm.equipment</field>
+        <field name="arch" type="xml">
+            <form string="Техника">
+                <header>
+                    <button name="action_start_work" type="object" string="Начать работу"
+                            class="btn-primary" invisible="state != 'free'"/>
+                    <button name="action_set_free" type="object" string="Освободить"
+                            invisible="state != 'maintenance'"/>
+                    <button name="action_set_maintenance" type="object" string="На обслуживание"
+                            invisible="state == 'working'"/>
+                    <field name="state" widget="statusbar" statusbar_visible="free,working,maintenance"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_open_logs" type="object" class="oe_stat_button" icon="fa-list">
+                            <field name="log_count" widget="statinfo" string="Смен"/>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <h1><field name="name" placeholder="Например: МТЗ-82 №3"/></h1>
+                    </div>
+                    <group>
+                        <group string="Характеристики">
+                            <field name="equipment_type"/>
+                            <field name="brand"/>
+                            <field name="working_width"/>
+                            <field name="fuel_consumption"/>
+                            <field name="fuel_consumption_uom"/>
+                        </group>
+                        <group string="Закрепление и статус">
+                            <field name="driver_id"/>
+                            <field name="active_log_id" readonly="1"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group string="Суммарные показатели">
+                            <field name="engine_hours" readonly="1"/>
+                            <field name="mileage" readonly="1"/>
+                        </group>
+                        <group string="Реальная производительность">
+                            <field name="avg_productivity" readonly="1"/>
+                            <field name="avg_fuel_per_ha" readonly="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Журнал работы">
+                            <field name="log_ids" readonly="1">
+                                <list>
+                                    <field name="date_start"/>
+                                    <field name="date_end"/>
+                                    <field name="engine_hours_used"/>
+                                    <field name="mileage_used"/>
+                                    <field name="area_processed"/>
+                                    <field name="productivity"/>
+                                    <field name="fuel_per_ha"/>
+                                    <field name="state"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_farm_equipment_search" model="ir.ui.view">
+        <field name="name">farm.equipment.search</field>
+        <field name="model">farm.equipment</field>
+        <field name="arch" type="xml">
+            <search string="Поиск техники">
+                <field name="name"/>
+                <field name="brand"/>
+                <field name="driver_id"/>
+                <filter string="Свободна" name="filter_free" domain="[('state','=','free')]"/>
+                <filter string="В работе" name="filter_working" domain="[('state','=','working')]"/>
+                <filter string="На обслуживании" name="filter_maintenance" domain="[('state','=','maintenance')]"/>
+                <separator/>
+                <filter string="Статус" name="group_state" context="{'group_by': 'state'}"/>
+                <filter string="Механизатор" name="group_driver" context="{'group_by': 'driver_id'}"/>
+                <filter string="Тип техники" name="group_type" context="{'group_by': 'equipment_type'}"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_farm_equipment" model="ir.actions.act_window">
+        <field name="name">Техника</field>
+        <field name="res_model">farm.equipment</field>
+        <field name="view_mode">list,kanban,form</field>
+        <field name="search_view_id" ref="view_farm_equipment_search"/>
+        <field name="context">{'search_default_filter_working': 0}</field>
+        <field name="help" type="xml">
+            <p class="o_view_nocontent_smart_action">
+                Добавьте первый трактор или комбайн
+            </p>
+        </field>
+    </record>
+    </data>
+</odoo>

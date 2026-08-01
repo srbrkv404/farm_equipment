@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+    <menuitem id="menu_farm_equipment_root" name="Учёт техники" sequence="10"/>
+
+    <menuitem id="menu_farm_equipment" name="Техника"
+              parent="menu_farm_equipment_root"
+              action="action_farm_equipment" sequence="10"/>
+
+    <menuitem id="menu_farm_equipment_log" name="Журнал работы"
+              parent="menu_farm_equipment_root"
+              action="action_farm_equipment_log" sequence="20"/>
+    </data>
+</odoo>
