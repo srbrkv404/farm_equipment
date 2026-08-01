@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <menuitem id="menu_farm_task_root" name="Мои поля" sequence="15"/>
+
+    <menuitem id="menu_farm_task_today" name="Мои задачи"
+              parent="menu_farm_task_root"
+              action="action_farm_task_today" sequence="10"/>
+
+    <menuitem id="menu_farm_task_all" name="Все задания"
+              parent="menu_farm_task_root"
+              action="action_farm_task_all" sequence="20"/>
+
+</odoo>

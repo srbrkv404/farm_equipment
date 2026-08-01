@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_farm_task_kanban" model="ir.ui.view">
+        <field name="name">farm.task.kanban</field>
+        <field name="model">farm.task</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="state" class="o_kanban_small_column">
+                <field name="field_number"/>
+                <field name="operation_type"/>
+                <field name="area"/>
+                <field name="planned_start"/>
+                <field name="planned_end"/>
+                <field name="state"/>
+                <field name="equipment_id"/>
+                <templates>
+                    <t t-name="card">
+                        <div class="oe_kanban_card oe_kanban_global_click p-2">
+                            <strong>Поле <field name="field_number"/></strong>
+                            <div>
+                                <field name="operation_type" widget="badge"/>
+                            </div>
+                            <div>Объём: <field name="area"/> га</div>
+                            <div t-if="record.planned_start.value">
+                                Начало: <field name="planned_start"/>
+                            </div>
+                            <div t-if="record.equipment_id.value">
+                                Техника: <field name="equipment_id"/>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="view_farm_task_list" model="ir.ui.view">
+        <field name="name">farm.task.list</field>
+        <field name="model">farm.task</field>
+        <field name="arch" type="xml">
+            <list string="Задания" decoration-success="state == 'done'"
+                  decoration-info="state == 'in_progress'"
+                  decoration-muted="state == 'waiting'">
+                <field name="date"/>
+                <field name="field_number"/>
+                <field name="operation_type"/>
+                <field name="area" sum="Итого, га"/>
+                <field name="planned_start"/>
+                <field name="planned_end"/>
+                <field name="equipment_id"/>
+                <field name="driver_id"/>
+                <field name="state" widget="badge"
+                       decoration-success="state == 'done'"
+                       decoration-info="state == 'in_progress'"
+                       decoration-muted="state == 'waiting'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_farm_task_form" model="ir.ui.view">
+        <field name="name">farm.task.form</field>
+        <field name="model">farm.task</field>
+        <field name="arch" type="xml">
+            <form string="Задание">
+                <header>
+                    <button name="action_start" type="object" string="Начать выполнение"
+                            class="btn-primary" invisible="state != 'waiting'"/>
+                    <button name="action_done" type="object" string="Завершить"
+                            class="btn-primary" invisible="state != 'in_progress'"/>
+                    <button name="action_reset_to_waiting" type="object" string="Вернуть в ожидание"
+                            invisible="state == 'waiting'"/>
+                    <field name="state" widget="statusbar" statusbar_visible="waiting,in_progress,done"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="field_number" placeholder="Номер поля, например №12"/></h1>
+                    </div>
+                    <group>
+                        <group string="Задание">
+                            <field name="operation_type"/>
+                            <field name="area"/>
+                            <field name="date"/>
+                        </group>
+                        <group string="Плановое время">
+                            <field name="planned_start"/>
+                            <field name="planned_end"/>
+                            <field name="actual_start" readonly="1"/>
+                            <field name="actual_end" readonly="1"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group string="Назначение">
+                            <field name="equipment_id"/>
+                            <field name="driver_id"/>
+                        </group>
+                        <group string="Параметры операции">
+                            <field name="plowing_depth" invisible="operation_type != 'plowing'"/>
+                            <field name="application_rate"
+                                   invisible="operation_type not in ('sowing', 'spraying')"/>
+                            <field name="application_rate_uom"
+                                   invisible="operation_type not in ('sowing', 'spraying')"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Подробности">
+                            <field name="description" placeholder="Полное описание задания..."/>
+                            <label for="field_features"/>
+                            <field name="field_features" placeholder="Особенности поля: уклон, влажность, препятствия..."/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_farm_task_search" model="ir.ui.view">
+        <field name="name">farm.task.search</field>
+        <field name="model">farm.task</field>
+        <field name="arch" type="xml">
+            <search string="Поиск заданий">
+                <field name="field_number"/>
+                <field name="equipment_id"/>
+                <field name="driver_id"/>
+                <filter string="Сегодня" name="filter_today"
+                        domain="[('date', '=', context_today())]"/>
+                <filter string="Ожидает" name="filter_waiting" domain="[('state', '=', 'waiting')]"/>
+                <filter string="В работе" name="filter_in_progress" domain="[('state', '=', 'in_progress')]"/>
+                <filter string="Выполнена" name="filter_done" domain="[('state', '=', 'done')]"/>
+                <separator/>
+                <filter string="Дата" name="group_date" context="{'group_by': 'date'}"/>
+                <filter string="Статус" name="group_state" context="{'group_by': 'state'}"/>
+                <filter string="Операция" name="group_operation" context="{'group_by': 'operation_type'}"/>
+                <filter string="Механизатор" name="group_driver" context="{'group_by': 'driver_id'}"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_farm_task_today" model="ir.actions.act_window">
+        <field name="name">Мои задачи</field>
+        <field name="res_model">farm.task</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="search_view_id" ref="view_farm_task_search"/>
+        <field name="context">{'search_default_filter_today': 1}</field>
+        <field name="help" type="xml">
+            <p class="o_view_nocontent_smart_action">
+                На сегодня задач нет. Отдыхайте
+            </p>
+            <p>
+                Если это не так — свяжитесь с агрономом.
+            </p>
+        </field>
+    </record>
+
+    <record id="action_farm_task_all" model="ir.actions.act_window">
+        <field name="name">Все задания</field>
+        <field name="res_model">farm.task</field>
+        <field name="view_mode">list,kanban,form</field>
+        <field name="search_view_id" ref="view_farm_task_search"/>
+        <field name="help" type="xml">
+            <p class="o_view_nocontent_smart_action">
+                Заданий пока нет
+            </p>
+        </field>
+    </record>
+
+</odoo>
