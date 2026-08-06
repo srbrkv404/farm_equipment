@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_farm_task_report_wizard_form" model="ir.ui.view">
+        <field name="name">farm.task.report.wizard.form</field>
+        <field name="model">farm.task.report.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Отчёт по заданиям">
+                <group>
+                    <field name="date_from"/>
+                    <field name="date_to"/>
+                    <field name="driver_id"/>
+                </group>
+                <footer>
+                    <button name="action_generate_report" type="object"
+                            string="Сформировать отчёт (PDF)" class="btn-primary"/>
+                    <button string="Отмена" special="cancel" class="btn-secondary"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_farm_task_report_wizard" model="ir.actions.act_window">
+        <field name="name">Отчёт за период</field>
+        <field name="res_model">farm.task.report.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+</odoo>

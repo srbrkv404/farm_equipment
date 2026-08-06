@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <template id="report_farm_task_monthly_document">
+        <t t-call="web.html_container">
+            <t t-call="web.internal_layout">
+                <div class="page">
+                    <h2>Отчёт по заданиям механизаторов</h2>
+                    <p>
+                        Период: <span t-esc="date_from"/> — <span t-esc="date_to"/>
+                    </p>
+
+                    <table class="table table-sm table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Дата</th>
+                                <th>Поле</th>
+                                <th>Операция</th>
+                                <th>Механизатор</th>
+                                <th>Техника</th>
+                                <th>Объём, га</th>
+                                <th>Начало</th>
+                                <th>Завершение</th>
+                                <th>Простой, ч</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr t-foreach="docs" t-as="task">
+                                <td><span t-esc="task.date"/></td>
+                                <td><span t-esc="task.field_number"/></td>
+                                <td><span t-esc="operation_labels.get(task.operation_type, task.operation_type)"/></td>
+                                <td><span t-esc="task.driver_id.name or '—'"/></td>
+                                <td><span t-esc="task.equipment_id.name or '—'"/></td>
+                                <td><span t-esc="'%.2f' % task.area"/></td>
+                                <td><span t-esc="task.actual_start"/></td>
+                                <td><span t-esc="task.actual_end"/></td>
+                                <td><span t-esc="'%.2f' % task.downtime_hours"/></td>
+                            </tr>
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <th colspan="5">Итого</th>
+                                <th><span t-esc="'%.2f' % total_area"/></th>
+                                <th colspan="2"></th>
+                                <th><span t-esc="'%.2f' % total_downtime"/></th>
+                            </tr>
+                        </tfoot>
+                    </table>
+
+                    <h3>Сводка по операциям</h3>
+                    <table class="table table-sm table-bordered" style="max-width: 500px;">
+                        <thead>
+                            <tr>
+                                <th>Операция</th>
+                                <th>Кол-во заданий</th>
+                                <th>Объём, га</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr t-foreach="summary_by_operation" t-as="row">
+                                <td><span t-esc="row['label']"/></td>
+                                <td><span t-esc="row['count']"/></td>
+                                <td><span t-esc="'%.2f' % row['area']"/></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </t>
+        </t>
+    </template>
+
+    <record id="action_report_farm_task_monthly" model="ir.actions.report">
+        <field name="name">Отчёт по заданиям за период</field>
+        <field name="model">farm.task</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">farm_tasks.report_farm_task_monthly_document</field>
+        <field name="report_file">farm_tasks.report_farm_task_monthly_document</field>
+        <field name="print_report_name">'Отчёт по заданиям'</field>
+    </record>
+
+</odoo>

@@ -1,2 +1,4 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_farm_task_user,farm.task.user,model_farm_task,base.group_user,1,1,1,1
+access_farm_task_downtime_user,farm.task.downtime.user,model_farm_task_downtime,base.group_user,1,1,1,1
+access_farm_task_report_wizard_user,farm.task.report.wizard.user,model_farm_task_report_wizard,base.group_user,1,1,1,1

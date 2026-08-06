@@ -13,6 +13,7 @@
                 <field name="planned_end"/>
                 <field name="state"/>
                 <field name="equipment_id"/>
+                <field name="downtime_hours"/>
                 <templates>
                     <t t-name="card">
                         <div class="oe_kanban_card oe_kanban_global_click p-2">
@@ -27,6 +28,9 @@
                             <div t-if="record.equipment_id.value">
                                 Техника: <field name="equipment_id"/>
                             </div>
+                            <div t-if="record.downtime_hours.value">
+                                Простой: <field name="downtime_hours"/> ч
+                            </div>
                         </div>
                     </t>
                 </templates>
@@ -40,6 +44,7 @@
         <field name="arch" type="xml">
             <list string="Задания" decoration-success="state == 'done'"
                   decoration-info="state == 'in_progress'"
+                  decoration-warning="state == 'paused'"
                   decoration-muted="state == 'waiting'">
                 <field name="date"/>
                 <field name="field_number"/>
@@ -49,9 +54,11 @@
                 <field name="planned_end"/>
                 <field name="equipment_id"/>
                 <field name="driver_id"/>
+                <field name="downtime_hours" sum="Итого простой, ч"/>
                 <field name="state" widget="badge"
                        decoration-success="state == 'done'"
                        decoration-info="state == 'in_progress'"
+                       decoration-warning="state == 'paused'"
                        decoration-muted="state == 'waiting'"/>
             </list>
         </field>
@@ -64,11 +71,19 @@
             <form string="Задание">
                 <header>
                     <button name="action_start" type="object" string="Начать выполнение"
-                            class="btn-primary" invisible="state != 'waiting'"/>
+                            class="btn-primary" invisible="state != 'waiting'"
+                            confirm="Подтвердите: вы уверены, что хотите начать выполнение задания?"/>
+                    <button name="action_pause" type="object" string="Приостановить (простой)"
+                            invisible="state != 'in_progress'"
+                            confirm="Отметить простой по задаче? Не нажимайте случайно."/>
+                    <button name="action_resume" type="object" string="Возобновить"
+                            class="btn-primary" invisible="state != 'paused'"/>
                     <button name="action_done" type="object" string="Завершить"
-                            class="btn-primary" invisible="state != 'in_progress'"/>
+                            class="btn-primary" invisible="state not in ('in_progress', 'paused')"
+                            confirm="Подтвердите: задание действительно выполнено?"/>
                     <button name="action_reset_to_waiting" type="object" string="Вернуть в ожидание"
-                            invisible="state == 'waiting'"/>
+                            invisible="state == 'waiting'"
+                            confirm="Сбросить статус и очистить фактические данные задания?"/>
                     <field name="state" widget="statusbar" statusbar_visible="waiting,in_progress,done"/>
                 </header>
                 <sheet>
@@ -87,6 +102,18 @@
                             <field name="actual_start" readonly="1"/>
                             <field name="actual_end" readonly="1"/>
                         </group>
+                    </group>
+                    <group string="Геолокация" invisible="state == 'waiting'">
+                        <field name="start_longitude" invisible="1"/>
+                        <field name="end_longitude" invisible="1"/>
+                        <field name="start_latitude" string="Место старта"
+                               widget="geo_capture"
+                               options="{'lat_field': 'start_latitude', 'lng_field': 'start_longitude'}"
+                               invisible="not actual_start"/>
+                        <field name="end_latitude" string="Место финиша"
+                               widget="geo_capture"
+                               options="{'lat_field': 'end_latitude', 'lng_field': 'end_longitude'}"
+                               invisible="not actual_end"/>
                     </group>
                     <group>
                         <group string="Назначение">
@@ -107,6 +134,17 @@
                             <label for="field_features"/>
                             <field name="field_features" placeholder="Особенности поля: уклон, влажность, препятствия..."/>
                         </page>
+                        <page string="Простои" invisible="not downtime_ids">
+                            <field name="downtime_hours" string="Итого простой, ч" readonly="1"/>
+                            <field name="downtime_ids">
+                                <list editable="bottom">
+                                    <field name="reason"/>
+                                    <field name="start_time"/>
+                                    <field name="end_time"/>
+                                    <field name="duration" sum="Итого, ч"/>
+                                </list>
+                            </field>
+                        </page>
                     </notebook>
                 </sheet>
                 <chatter/>
@@ -126,7 +164,10 @@
                         domain="[('date', '=', context_today())]"/>
                 <filter string="Ожидает" name="filter_waiting" domain="[('state', '=', 'waiting')]"/>
                 <filter string="В работе" name="filter_in_progress" domain="[('state', '=', 'in_progress')]"/>
+                <filter string="Простой" name="filter_paused" domain="[('state', '=', 'paused')]"/>
                 <filter string="Выполнена" name="filter_done" domain="[('state', '=', 'done')]"/>
+                <filter string="Этот месяц" name="filter_this_month"
+                        domain="[('date', '&gt;=', context_today().strftime('%Y-%m-01'))]"/>
                 <separator/>
                 <filter string="Дата" name="group_date" context="{'group_by': 'date'}"/>
                 <filter string="Статус" name="group_state" context="{'group_by': 'state'}"/>
@@ -160,6 +201,20 @@
         <field name="help" type="xml">
             <p class="o_view_nocontent_smart_action">
                 Заданий пока нет
+            </p>
+        </field>
+    </record>
+
+    <record id="action_farm_task_history" model="ir.actions.act_window">
+        <field name="name">История выполненных заданий</field>
+        <field name="res_model">farm.task</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_farm_task_search"/>
+        <field name="domain">[('state', '=', 'done')]</field>
+        <field name="context">{'search_default_filter_this_month': 1, 'search_default_group_date': 1}</field>
+        <field name="help" type="xml">
+            <p class="o_view_nocontent_smart_action">
+                Выполненных заданий пока нет
             </p>
         </field>
     </record>

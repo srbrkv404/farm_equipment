@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="farm_tasks.GeoCaptureWidget">
+        <div class="o_field_geo_capture d-flex align-items-center gap-2">
+            <button type="button" class="btn btn-secondary btn-sm" t-on-click="captureLocation">
+                📍 Определить местоположение
+            </button>
+            <span t-if="hasCoords" class="text-muted">
+                <t t-esc="latValue"/>, <t t-esc="lngValue"/>
+            </span>
+            <span t-else="" class="text-muted">координаты не определены</span>
+        </div>
+    </t>
+</templates>

@@ -11,4 +11,12 @@
               parent="menu_farm_task_root"
               action="action_farm_task_all" sequence="20"/>
 
+    <menuitem id="menu_farm_task_history" name="История"
+              parent="menu_farm_task_root"
+              action="action_farm_task_history" sequence="30"/>
+
+    <menuitem id="menu_farm_task_report_wizard" name="Отчёт за период"
+              parent="menu_farm_task_root"
+              action="farm_tasks.action_farm_task_report_wizard" sequence="40"/>
+
 </odoo>
